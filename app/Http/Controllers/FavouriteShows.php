@@ -4,20 +4,20 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Pagination\Paginator;
-use Illuminate\Pagination\LengthAwarePaginator;
-use App\Services\UserService;
+use App\Models\Favourites;
+use App\Services\ShowsService;
+use Illuminate\Support\Facades\Config;
 
 class FavouriteShows extends Controller
 {
-    protected $userService;
+    protected $showsService;
 
-    public function __construct(UserService $userService)
+    public function __construct(ShowsService $showsService)
     {
-        $this->userService = $userService;
+        $this->showsService = $showsService;
     }
     
-    public function addFavouriteMovie(Request $request)
+    public function addFavouriteMovie($movieId)
     {
         try {
             $user = auth()->user();
@@ -26,111 +26,113 @@ class FavouriteShows extends Controller
                 return response()->json(['error' => 'Unauthenticated User.'], 400);
             }
 
-            $movie = $request->all();
-            $currentFavouriteMovies = json_decode($user->favouriteMovies, true) ?? [];
-
-            $result = $this->userService->addFavourite($user, $currentFavouriteMovies, $movie, 'favouriteMovies');
-
-            return response()->json($result);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
-    public function addFavouriteSerie(Request $request)
-    {
-        try {
-            $user = auth()->user();
-
-            if (!$user) {
-                return response()->json(['error' => 'Unauthenticated User.'], 400);
-            }
-
-            $serie = $request->all();
-            $currentFavouriteSeries = json_decode($user->favouriteSeries, true) ?? [];
-
-            $result = $this->userService->addFavourite($user, $currentFavouriteSeries, $serie, 'favouriteSeries');
-
-            return response()->json($result);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
-    public function removeMovieFromFavourites(Request $request, $itemId)
-    {
-        try {
-            $user = auth()->user();
-
-            if (!$user) {
-                return response()->json(['error' => 'Unauthenticated User.'], 400);
-            }
-
-            $currentFavouriteMovies = json_decode($user->favouriteMovies, true) ?? [];
-            $result = $this->userService->removeFavourite($user, $currentFavouriteMovies, $itemId, 'favouriteMovies');
-
-            return response()->json($result);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
-    public function removeSerieFromFavourites(Request $request, $itemId)
-    {
-        try {
-            $user = auth()->user();
-
-            if (!$user) {
-                return response()->json(['error' => 'Unauthenticated User.'], 400);
-            }
-
-            $currentFavouriteSeries = json_decode($user->favouriteSeries, true) ?? [];
-            $result = $this->userService->removeFavourite($user, $currentFavouriteSeries, $itemId, 'favouriteSeries');
-
-            return response()->json($result);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
-    public function showFavourites(Request $request) 
-    {
-        try {
-            $user = auth()->user();
+            $favourite = Favourites::create([
+                'showId' => $movieId,
+                'type' => 'movie',
+                'UserId' => $user->id,
+            ]);
     
+            return response()->json(['message' => 'Movie added to favorites successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function addFavouriteSerie($serieId)
+    {
+        try {
+            $user = auth()->user();
+
             if (!$user) {
                 return response()->json(['error' => 'Unauthenticated User.'], 400);
             }
-    
-            $moviesPerPage = 5;
-            $seriesPerPage = 5;
-            $moviePage = $request->get('moviePage', 1);
-            $seriesPage = $request->get('seriesPage', 1);
-            
-            $favouriteMovies = $this->paginateFavourites(json_decode($user->favouriteMovies, true), $moviesPerPage, $moviePage);
-            $favouriteMoviesData = $favouriteMovies->items();
 
-            $favouriteSeries = $this->paginateFavourites(json_decode($user->favouriteSeries, true), $seriesPerPage, $seriesPage);
-            $favouriteSeriesData = $favouriteSeries->items();
+            $favourite = Favourites::create([
+                'showId' => $serieId,
+                'type' => 'tv',
+                'UserId' => $user->id,
+            ]);
 
-            $movieTotalPages = $favouriteMovies->lastPage();
-            $seriesTotalPages = $favouriteSeries->lastPage();
+            return response()->json(['message' => 'Serie added to favorites successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function removeMovieFromFavourites($movieId)
+    {
+        try {
+            $user = auth()->user();
+
+            if (!$user) {
+                return response()->json(['error' => 'Unauthenticated User.'], 400);
+            }   
+
+            Favourites::where('UserId', $user->id)
+                ->where('showId', $movieId)
+                ->where('type', 'movie')
+                ->delete();
+
+        return response()->json(['message' => 'Movie removed from favourites successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function removeSerieFromFavourites($serieId)
+    {
+        try {
+            $user = auth()->user();
+
+            if (!$user) {
+                return response()->json(['error' => 'Unauthenticated User.'], 400);
+            }
+            Favourites::where('UserId', $user->id)
+                ->where('showId', $serieId)
+                ->where('type', 'tv')
+                ->delete();
+
+            return response()->json(['message' => 'Serie removed from favourites successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getFavourites(Request $request) 
+    {
+        try {
+            $user = auth()->user();
+
+            if (!$user) {
+                return response()->json(['error' => 'Unauthenticated User.'], 400);
+            }
+
+            $perPage = 10;
+            $page = $request->get('page', 1);
+
+            $favourites = Favourites::where('UserId', $user->id)
+                ->paginate($perPage, ['*'], 'page', $page);
+
+            $detailedFavorites = [];
+            foreach ($favourites as $favorite) {
+                $url = config('services.movie_serie_api.base_api_url') .  "/$favorite->type/$favorite->showId";
+                $detailedFavorite = $this->showsService->showDetails($url);
+                
+                if ($detailedFavorite instanceof \Illuminate\Http\JsonResponse) {
+                    $detailedFavorite = $detailedFavorite->getData(true);
+                }
+                $cleanedFavourite = $this->showsService->filterMovieOrSerieDetails($detailedFavorite, $favorite->type);
+
+                $detailedFavorites[] = $cleanedFavourite;
+            }
 
             return response()->json([
-                'movieTotalPages' => $movieTotalPages,
-                'currentMoviePage'=> $moviePage,
-                'movies' => $favouriteMoviesData,
-                'seriesTotalPages' => $seriesTotalPages,
-                'currentSeriePage'=> $seriesPage,
-                'series' => $favouriteSeriesData,
+                'page' => $favourites->currentPage(),
+                'total_pages' => $favourites->lastPage(),
+                'favourites' => $detailedFavorites,
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
-    }
-    private function paginateFavourites($favourites, $perPage, $currentPage)
-    {
-        $currentPageItems = array_slice($favourites, ($currentPage - 1) * $perPage, $perPage);
-        return new LengthAwarePaginator($currentPageItems, count($favourites), $perPage, $currentPage);
     }
 }

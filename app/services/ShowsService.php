@@ -3,6 +3,7 @@
 namespace App\Services;
 use Illuminate\Support\Facades\Config;
 use GuzzleHttp\Client;
+use Illuminate\Support\Arr;
 
 class ShowsService
 {
@@ -127,5 +128,16 @@ class ShowsService
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+    public function filterMovieOrSerieDetails($show, $type)
+    {
+        $fields = $type === 'movie'
+            ? ['id', 'original_title', 'overview', 'popularity', 'poster_path', 'release_date', 'title', 'vote_average', 'vote_count']
+            : ['id', 'name', 'origin_country', 'original_name', 'overview', 'popularity', 'poster_path', 'vote_average', 'vote_count'];
+
+        $filteredDetails = Arr::only($show, $fields);
+        return [
+            $type => $filteredDetails,
+        ];
     }
 }

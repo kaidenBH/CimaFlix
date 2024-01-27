@@ -1,66 +1,55 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Test Backend Movies
+## Overview:
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This **CimaFlix** is a Backend application made with Laravel Sail along with MySql database. It was developed to use an external api for fetching and searching for movies and series. and was made to manage these movies and series in the app that was implemented.
 
-## About Laravel
+## How to set-up and use:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Clone this Repository to your local machine.
+- Change the provided **.env** file to meet your needs such as setting up your Database requirment, and change the **MOVIE_API_KEY** to your own (you can get it from https://www.themoviedb.org/documentation/api), and lastly change the **EXTERNAL_API** if needed.
+- The app is configured with sail, so you can open docker desktop or any docker provider that accepts WSL2 and run **sail up -d**, and then migrate the db by **sail artisan migrate** and youre good to go!
+- After that you can use Postman (or any app pf your choice) to make api requests on the port 80 like: **http://localhost:8000/api/...**.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Database migrations design:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+I went with a user table that has this structure: 
+<pre>
+ $table->id();
+ $table->string('username')->unique();
+ $table->string('password');
+ $table->rememberToken();
+ $table->timestamps();
+</pre>
+and a favourties table to save the user is alongside with either the movie id or serie id while setting the type for each one. It's structured like this:
+<pre>
+ $table->id();
+ $table->integer('showId');
+ $table->string('type');
+ $table->unsignedBigInteger('UserId');
+ $table->foreign('UserId')->references('id')->on('users')->onDelete('cascade');
+ $table->timestamps();
+</pre>
 
-## Learning Laravel
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## API endpoints usage: 
+There are many api endpoints, here's a brief explanation on some of them:
+- ***/auth/signUp*:** The user would send a **post** request here if he wants to create a new account and wil be required to send these information along **{ username, password }** then if the request is a success it will return the user details and a unique token that lasts for a week, that will give the user authorization to access some api endpoints.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- ***/auth/signIn*:** if the user already have an account he can send a **post** request to this endpoint to send his **{ username, password }** to retrieve a unique token that lasts for a week.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- ***/show/movieList*** and ***/show/serieList*** are **get** requests for fetching movies/series that would give back the top 5 rated movies/series and then 10 items per page sorted by popularity.
 
-## Laravel Sponsors
+- ***/show/searchMovies*** and ***/show/searchSeries*** are **get** requests for searching for a specific movie/serie by sending a **search** string in the request which waht you want to be searched in titles, original titles.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- ***/show/movie/{id}*:** and ***/show/serie/{id}*:** are **get** requests for getting the more details about a movie/serie.
 
-### Premium Partners
+- ***/show/movieTrailers/{id}*** and ***/show/serieTrailers/{id}*** are **get** requests for getting the trailers of a movie/serie.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+- ***/show/addMovieToFavourites/{movieId}*** and ***/show/addSerieToFavourites/{serieId}*** are **put** requests to make a movie/serie as favourites. 
 
-## Contributing
+- ***/show/removeMovieToFavourites/{movieId}*** and ***/show/removeSerieToFavourites/{serieId}*** are **put** requests to remove a movie/serie from favourites. 
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- ***/show/favourites*:** this is a **get** request to fetch all the favourite movies and series and paginate them to be only 10 items per page. 
 
-## Code of Conduct
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+[Go here for all the requests with examples.](https://documenter.getpostman.com/view/28993914/2s9Yyqi2kk)

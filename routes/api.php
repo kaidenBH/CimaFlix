@@ -35,11 +35,11 @@ Route::group(['prefix' => 'show'], function () {
     Route::get('/movieTrailers/{id}', [ShowsController::class, 'movieTrailers']);
     Route::get('/serieTrailers/{id}', [ShowsController::class, 'serieTrailers']);
 
-    Route::middleware('auth:sanctum')->put('/addMovieToFavourites', [FavouriteShows::class, 'addFavouriteMovie']);
-    Route::middleware('auth:sanctum')->put('/addSerieToFavourites', [FavouriteShows::class, 'addFavouriteSerie']);
+    Route::middleware('auth:sanctum')->put('/addMovieToFavourites/{movieId}', [FavouriteShows::class, 'addFavouriteMovie']);
+    Route::middleware('auth:sanctum')->put('/addSerieToFavourites/{serieId}', [FavouriteShows::class, 'addFavouriteSerie']);
 
-    Route::middleware('auth:sanctum')->put('/removeMovieToFavourites/{itemId}', [FavouriteShows::class, 'removeMovieFromFavourites']);
-    Route::middleware('auth:sanctum')->put('/removeSerieToFavourites/{itemId}', [FavouriteShows::class, 'removeSerieFromFavourites']);
+    Route::middleware('auth:sanctum')->put('/removeMovieToFavourites/{movieId}', [FavouriteShows::class, 'removeMovieFromFavourites']);
+    Route::middleware('auth:sanctum')->put('/removeSerieToFavourites/{serieId}', [FavouriteShows::class, 'removeSerieFromFavourites']);
 
-    Route::middleware('auth:sanctum')->get('/favourites', [FavouriteShows::class, 'showFavourites']);
+    Route::middleware('auth:sanctum')->get('/favourites', [FavouriteShows::class, 'getFavourites']);
 });

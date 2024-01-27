@@ -46,7 +46,6 @@ class UserController extends Controller
             }
 
             $user = auth()->user();
-            $user->makeHidden(['favouriteMovies', 'favouriteSeries']);
             $token = $this->userService->generateToken($user);
 
             return response()->json(['user' => $user, 'token' => $token, 'message' => 'User authenticated successfully']);
