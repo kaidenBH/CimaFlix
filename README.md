@@ -8,7 +8,7 @@ This **CimaFlix** is a Backend application made with Laravel Sail along with MyS
 - Clone this Repository to your local machine.
 - Change the provided **.env** file to meet your needs such as setting up your Database requirment, and change the **MOVIE_API_KEY** to your own (you can get it from https://www.themoviedb.org/documentation/api), and lastly change the **EXTERNAL_API** if needed.
 - The app is configured with sail, so you can open docker desktop or any docker provider that accepts WSL2 and run **sail up -d**, and then migrate the db by **sail artisan migrate** and youre good to go!
-- After that you can use Postman (or any app pf your choice) to make api requests on the port 80 like: **http://localhost:8000/api/...**.
+- After that you can use Postman (or any app pf your choice) to make api requests on the port 80 like: **http://localhost:80/api/...**.
 
 ## Database migrations design:
 
