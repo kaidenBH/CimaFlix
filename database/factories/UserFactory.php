@@ -18,10 +18,8 @@ class UserFactory extends Factory
 
     public function definition(): array
     {
-        $movies = ['Movie1', 'Movie2', 'Movie3'];
         return [
             'username' => fake()->unique()->name(),
-            'favouriteMovies' => json_encode($this->faker->randomElements($movies, 3)),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
         ];
