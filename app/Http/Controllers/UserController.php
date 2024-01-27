@@ -21,12 +21,6 @@ class UserController extends Controller
     public function signup(UserSignUp $request)
     {
         try {
-            $existingUser = User::where('username', $request->username)->first();
-            
-            if ($existingUser) {
-                return response()->json(['message' => 'This Username already exists.'], 400);
-            }
-
             $user = User::create([
                 'username' => $request->username,
                 'password' => Hash::make($request->password),

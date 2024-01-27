@@ -38,8 +38,8 @@ Route::group(['prefix' => 'show'], function () {
     Route::middleware('auth:sanctum')->put('/addMovieToFavourites', [FavouriteShows::class, 'addFavouriteMovie']);
     Route::middleware('auth:sanctum')->put('/addSerieToFavourites', [FavouriteShows::class, 'addFavouriteSerie']);
 
-    Route::middleware('auth:sanctum')->put('/removeMovieToFavourites', [FavouriteShows::class, 'removeMovieFromFavourites']);
-    Route::middleware('auth:sanctum')->put('/removeSerieToFavourites', [FavouriteShows::class, 'removeSerieFromFavourites']);
+    Route::middleware('auth:sanctum')->put('/removeMovieToFavourites/{itemId}', [FavouriteShows::class, 'removeMovieFromFavourites']);
+    Route::middleware('auth:sanctum')->put('/removeSerieToFavourites/{itemId}', [FavouriteShows::class, 'removeSerieFromFavourites']);
 
     Route::middleware('auth:sanctum')->get('/favourites', [FavouriteShows::class, 'showFavourites']);
 });
